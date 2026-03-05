@@ -26,10 +26,9 @@ A hands-on lab guide for deploying Check Point gateways using the **Check Point 
    - 6.7 [Updating ALLOWED_ORIGINS after Nginx](#67-updating-allowed_origins-after-nginx)
    - 6.8 [Firewall Rules](#68-firewall-rules)
 7. [Preparing Zero Touch Templates](#7-preparing-zero-touch-templates)
-   - 7.1 [Spark Templates](#71-spark-templates)
-   - 7.2 [Gaia Templates](#72-gaia-templates)
+   - 7.1 [Templates](#71-templates)
+   - 7.2 [File Injection (##!!)](#72-file-injection-)
    - 7.3 [User-Script Placeholders](#73-user-script-placeholders)
-   - 7.4 [File Injection (##!!)](#74-file-injection-)
 8. [Preparing CSV Files for Batch Deployment](#8-preparing-csv-files-for-batch-deployment)
    - 8.1 [Smart-1 Cloud CSV](#81-smart-1-cloud-csv)
    - 8.2 [SMS CSV](#82-sms-csv)
@@ -512,64 +511,20 @@ sudo firewall-cmd --reload
 
 Before using the deployer, you need Zero Touch templates configured in the Zero Touch Portal. Each template contains a **user-script** — a clish script that runs on the gateway during First Time Wizard (FTW).
 
-### 7.1 Spark Templates
+### 7.1 Templates
 
-Spark templates (for 1500 series — 1570, 1590, etc.) must include:
+use the name spark in your template names to allow the application filter the templaes accordingly
 
-```clish
-set hostname <gateway-name>
-set sic_init password <sic-key>
-```
-
-For Smart-1 Cloud Spark, also include:
-
-```clish
-set cloudinfra token <token>
-```
-
-### 7.2 Gaia Templates
-
-Gaia templates (for 3000–6000 series — 3950, 3970, etc.) must include:
-
-```clish
-set hostname <gateway-name>
-```
-
-For SMS/LSM Gaia, include management connectivity:
-
-```clish
-# LSM example
-LSMenabler -r on -y
-cp_conf sic cert_pull <mgmt-server-ip> <gateway-name>
-cp_conf intfs set external Mgmt
-fw fetch -i <mgmt-server-ip>
-fw fetch -i <mgmt-server-ip>
-```
-
-### 7.3 User-Script Placeholders
-
-The deployer automatically replaces these placeholders before pushing the configuration:
-
-| Placeholder | Replaced With | Applicable Flows |
-|---|---|---|
-| `<gateway-name>` | Gateway hostname from the form/CSV | All |
-| `<mgmt-server-ip>` | Management server IP | SMS, LSM |
-| `<sic-key>` | SIC one-time password | SMS (Spark), LSM, S1C (Spark) |
-| `<token>` | MaaS token from Smart-1 Cloud | Smart-1 Cloud |
-
-### 7.4 File Injection (##!!)
+### 7.2 File Injection (##!!)
 
 Lines in the user-script starting with `##!!` followed by a filename are replaced with the contents of that file at deployment time. This allows per-gateway or shared configuration snippets to be injected.
 
 **Template user-script example:**
-
 ```clish
-set hostname <gateway-name>
 ##!! routing-table.conf
 ##!! firewall-rules.conf
 set sic_init password <sic-key>
 ```
-
 **File lookup order:**
 
 1. `backend/config_files/<gateway-name>/<filename>` — gateway-specific override
@@ -590,6 +545,17 @@ backend/config_files/
 ```
 
 If a file is not found, the line is replaced with: `#! file not found: <filename>`
+
+### 7.3 User-Script Placeholders
+
+The deployer automatically replaces these placeholders before pushing the configuration:
+
+| Placeholder | Replaced With | Applicable Flows |
+|---|---|---|
+| `<gateway-name>` | Gateway hostname from the form/CSV | All |
+| `<mgmt-server-ip>` | Management server IP | SMS, LSM |
+| `<sic-key>` | SIC one-time password | SMS (Spark), LSM, S1C (Spark) |
+| `<token>` | MaaS token from Smart-1 Cloud | Smart-1 Cloud |
 
 ---
 
@@ -1369,7 +1335,7 @@ Here are additional topics you may want to include as the lab evolves:
 # A.1 Directory Structure
 
 ```
-checkpoint-gateway-deployer/
+/
 ├── deploy-batch.py              # CLI batch deployment tool
 ├── requirements.txt             # Python dependencies
 ├── sample_smart1_cloud.csv      # Sample CSV — Smart-1 Cloud
@@ -1394,5 +1360,6 @@ checkpoint-gateway-deployer/
     ├── js/app.js                # Application logic
     └── css/                     # Stylesheets
 ```
+
 
 
