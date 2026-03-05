@@ -59,18 +59,19 @@ A hands-on lab guide for deploying Check Point gateways using the **Check Point 
     - 10.5 [Exporting Results to CSV](#105-exporting-results-to-csv)
     - 10.6 [Remote Backend](#106-remote-backend)
     - 10.7 [Creating Sample CSV Templates](#107-creating-sample-csv-templates)
-11. [Lab Exercises](#11-lab-exercises)
-    - Exercise 1 — Deploy a Spark Gateway to Smart-1 Cloud
-    - Exercise 2 — Deploy a Gaia Gateway to SMS
-    - Exercise 3 — Batch Deploy Multiple Gateways to LSM
-    - Exercise 4 — SMP Zero Touch Only Deployment
+11. [Exercises](#11-exercises)
+    - Deploy a Spark Gateway to Smart-1 Cloud
+    - Deploy a Gaia Gateway to SMS
+    - Batch Deploy Multiple Gateways to LSM
+    - SMP Zero Touch Only Deployment
 12. [Logging and Debugging](#12-logging-and-debugging)
 13. [API Reference (Quick Summary)](#13-api-reference-quick-summary)
 14. [Troubleshooting](#14-troubleshooting)
 15. [Security Considerations](#15-security-considerations)
-16. [Appendix — Config File Injection Examples](#16-appendix--config-file-injection-examples)
+
 Appendix
-- A.1 [Directory Structure](#32-directory-structure)
+- A.1 [Directory Structure](#A.1-directory-structure)
+- A.2 [Config File Injection Examples](#A.2-config-file-injection-examples)
 ---
 
 ## 1. Lab Overview
@@ -710,7 +711,8 @@ You will see the main layout:
 - **Left sidebar** — Setup panel with sequential configuration steps
 - **Main area** — Shows a checklist of remaining steps until all sidebar fields are complete
 
-[screenshot: initial application view with empty sidebar and checklist]
+<img width="1028" height="638" alt="image" src="https://github.com/user-attachments/assets/7b07affd-45fc-4be0-92c3-32d980c179b6" />
+
 
 ### 9.2 Step 1 — Login to Zero Touch Portal
 
@@ -718,7 +720,8 @@ Click the **"Login to Zero Touch"** button in the sidebar.
 
 The application uses the `ZERO_TOUCH_CLIENT_ID` and `ZERO_TOUCH_SECRET_KEY` from your `.env` file to authenticate. On success, the button turns green and shows **"Connected"**.
 
-[screenshot: sidebar showing green "Connected" button]
+<img width="1256" height="698" alt="image" src="https://github.com/user-attachments/assets/cc153b16-9464-4ad9-9a30-3f1543067b36" />
+
 
 > If login fails, check your `.env` file and verify the credentials are correct.
 
@@ -726,7 +729,8 @@ The application uses the `ZERO_TOUCH_CLIENT_ID` and `ZERO_TOUCH_SECRET_KEY` from
 
 After login, the **Account** dropdown populates with your Zero Touch accounts. Select the account that contains your gateway templates.
 
-[screenshot: account dropdown expanded]
+<img width="1077" height="741" alt="image" src="https://github.com/user-attachments/assets/fae83f56-c08f-448d-a9e4-05639f76210f" />
+
 
 ### 9.4 Step 3 — Choose Gateway Type
 
@@ -737,7 +741,8 @@ Select the gateway type:
 
 This filters the template list to show only matching templates.
 
-[screenshot: gateway type dropdown]
+<img width="999" height="601" alt="image" src="https://github.com/user-attachments/assets/3b8b264f-8f62-441a-a0d6-d78efca82649" />
+
 
 ### 9.5 Step 4 — Select Template
 
@@ -746,14 +751,17 @@ Choose the Zero Touch template that matches your gateway hardware. Templates are
 - **Spark** templates: names containing "Spark"
 - **Gaia** templates: names not containing "Spark"
 
-[screenshot: template dropdown showing filtered templates]
+<img width="1125" height="706" alt="image" src="https://github.com/user-attachments/assets/c2ad8f3d-01c6-47cc-a58b-62ebcd556345" />
+
 
 ### 9.6 Step 5 — Enter MAC Address and Gateway Name
 
 - **MAC Address** — Enter the physical MAC address of the gateway (format: `00:1C:7F:XX:XX:XX`)
 - **Gateway Name** — Enter a hostname for the gateway (alphanumeric, hyphens, underscores only)
 
-[screenshot: MAC address and gateway name fields filled in]
+<img width="990" height="703" alt="image" src="https://github.com/user-attachments/assets/e0b759b8-f5d6-4694-8739-015ac04ba938" />
+
+this mac address must exist in the selected UserCenter /account
 
 ### 9.7 Step 6 — Select Management Platform
 
@@ -768,7 +776,8 @@ Choose the management platform:
 
 > **Note:** SMP only appears when gateway type is set to "Spark".
 
-[screenshot: management platform dropdown]
+<img width="1080" height="707" alt="image" src="https://github.com/user-attachments/assets/f94ddb01-d047-48b7-9ec6-6ceb4c4a25d6" />
+
 
 ### 9.8 Step 7 — Claim the Gateway
 
@@ -779,7 +788,8 @@ Claiming:
 - Retrieves the template's user-script for review
 - For Gaia gateways, populates the Network Configuration tab with template defaults
 
-[screenshot: claim button and "Claimed" status badge]
+<img width="1219" height="628" alt="image" src="https://github.com/user-attachments/assets/52c92f4f-631b-4a25-bbb9-d0fe9903264e" />
+
 
 ### 9.9 Step 8 — Configure Deployment Parameters
 
@@ -795,7 +805,8 @@ After claiming, the main area switches to a **tabbed interface**. The first tab 
 - Policy Package (optional)
 - Open activation link toggle (Gaia only)
 
-[screenshot: Smart-1 Cloud configuration tab]
+<img width="1003" height="956" alt="image" src="https://github.com/user-attachments/assets/0a74f855-b8bf-4157-987e-72526b295c89" />
+
 
 **SMS / MDS:**
 - Management Server IP (required — also triggers hardware/version list fetch)
@@ -808,7 +819,8 @@ After claiming, the main area switches to a **tabbed interface**. The first tab 
 - Policy Package
 - Open activation link toggle (Gaia only)
 
-[screenshot: SMS configuration tab]
+<img width="982" height="1045" alt="image" src="https://github.com/user-attachments/assets/f8246116-bc9f-4286-a0a1-8de2dccd1582" />
+
 
 **LSM:**
 - Management Server IP
@@ -818,12 +830,14 @@ After claiming, the main area switches to a **tabbed interface**. The first tab 
 - Gateway IPv4 (optional — overrides template default)
 - Domain (for MDS)
 
-[screenshot: LSM configuration tab]
+<img width="941" height="614" alt="image" src="https://github.com/user-attachments/assets/1010537b-74a9-49f3-825b-4482052fcf10" />
+
 
 **SMP:**
 - No additional configuration needed — informational message displayed
+put necessary configuration on Template level before using this framework
+<img width="961" height="475" alt="image" src="https://github.com/user-attachments/assets/1375a255-47e4-4134-9c5a-ebe6e1dbe366" />
 
-[screenshot: SMP configuration tab]
 
 ### 9.10 Step 9 — Review the User Script
 
@@ -835,7 +849,9 @@ Key features:
 - **Editable** — you can edit the script directly in the text area
 - **Copy button** — copies the processed script to clipboard
 
-[screenshot: user script tab showing placeholders]
+<img width="1240" height="692" alt="image" src="https://github.com/user-attachments/assets/a3b3be7c-ee5f-43c9-acf6-efdf09951ee8" />
+
+if there are placeholders that needs to be replaces a digit apears next to the tab name. <token> is the only placeholder that is replaces during the flow of Smart one cloud deploymant
 
 ### 9.11 Step 10 — Network Configuration (Gaia Only)
 
@@ -853,7 +869,8 @@ For Gaia gateways, a **"Network Configuration"** tab is available. This sets the
 
 These values are pre-populated from the Zero Touch template defaults when the gateway is claimed. Modify per-gateway as needed.
 
-[screenshot: network configuration tab for Gaia gateway]
+<img width="1280" height="1009" alt="image" src="https://github.com/user-attachments/assets/0e831030-83af-47d7-823c-92735f9e0638" />
+
 
 ### 9.12 Step 11 — Deploy
 
@@ -864,7 +881,8 @@ Before deploying:
 2. For Gaia gateways, network configuration is also pushed
 3. The deployment request is sent to the backend orchestrator
 
-[screenshot: deploy button enabled]
+<img width="985" height="871" alt="image" src="https://github.com/user-attachments/assets/bd865303-d5fb-4148-a079-5eae91d86589" />
+
 
 ### 9.13 Step 12 — Monitor the Deployment Log
 
@@ -875,7 +893,8 @@ The view automatically switches to the **"Deployment Log"** tab. A real-time log
 - **Status indicators** — color-coded per step (in-progress, success, error)
 - **Final result** — success message with blade summary, or error details
 
-[screenshot: deployment log showing successful deployment steps]
+<img width="950" height="537" alt="image" src="https://github.com/user-attachments/assets/2fe582f2-6f0e-4a87-81cd-ff672df992e1" />
+
 
 **For Gaia gateways (SMS/S1C):** If "Open activation link" was enabled, the activation link opens automatically in a new browser tab after successful deployment.
 
@@ -987,9 +1006,9 @@ python deploy-batch.py --create-all-samples
 
 ---
 
-## 11. Lab Exercises
+## 11. Exercises
 
-### Exercise 1 — Deploy a Spark Gateway to Smart-1 Cloud
+### Deploy a Spark Gateway to Smart-1 Cloud
 
 **Objective:** Deploy a 1590 appliance managed by Smart-1 Cloud.
 
@@ -1013,7 +1032,7 @@ python deploy-batch.py --create-all-samples
 
 ---
 
-### Exercise 2 — Deploy a Gaia Gateway to SMS
+### Deploy a Gaia Gateway to SMS
 
 **Objective:** Deploy a 3950 appliance managed by an on-premises SMS/MDS.
 
@@ -1036,7 +1055,7 @@ python deploy-batch.py --create-all-samples
 
 ---
 
-### Exercise 3 — Batch Deploy Multiple Gateways to LSM
+### Batch Deploy Multiple Gateways to LSM
 
 **Objective:** Deploy 4 gateways to LSM using the batch CLI tool.
 
@@ -1057,7 +1076,7 @@ python deploy-batch.py --create-all-samples
 
 ---
 
-### Exercise 4 — SMP Zero Touch Only Deployment
+### SMP Zero Touch Only Deployment
 
 **Objective:** Deploy Spark gateways to SMP with no management server interaction.
 
@@ -1274,48 +1293,6 @@ SIC one-time passwords (`sic_otp`) are used once during gateway initialization. 
 
 ---
 
-## 16. Appendix — Config File Injection Examples
-
-### Example: Static Routes
-
-**File:** `backend/config_files/gw-3950-01/routing-table.conf`
-
-```clish
-set static-route 10.0.0.0/8 nexthop gateway address 192.168.1.1 on
-set static-route 172.16.0.0/12 nexthop gateway address 192.168.1.1 on
-```
-
-**In the template user-script:**
-```clish
-set hostname <gateway-name>
-##!! routing-table.conf
-```
-
-**Result after injection (for gw-3950-01):**
-```clish
-set hostname gw-3950-01
-set static-route 10.0.0.0/8 nexthop gateway address 192.168.1.1 on
-set static-route 172.16.0.0/12 nexthop gateway address 192.168.1.1 on
-```
-
-### Example: Shared Configuration
-
-**File:** `backend/config_files/dns-settings.conf` (shared — used by all gateways)
-
-```clish
-set dns primary 8.8.8.8
-set dns secondary 8.8.4.4
-set dns suffix example.com
-```
-
-### Example: Per-Gateway Override
-
-If `gw-3950-01` needs different DNS:
-- `backend/config_files/gw-3950-01/dns-settings.conf` → used for gw-3950-01
-- `backend/config_files/dns-settings.conf` → used for all other gateways
-
----
-
 ## Additional Suggestions for Lab Expansion
 
 Here are additional topics you may want to include as the lab evolves:
@@ -1363,3 +1340,45 @@ Here are additional topics you may want to include as the lab evolves:
 
 
 
+
+## A.2 — Config File Injection Examples
+
+### Example: Static Routes
+
+**File:** `backend/config_files/gw-3950-01/routing-table.conf`
+
+```clish
+set static-route 10.0.0.0/8 nexthop gateway address 192.168.1.1 on
+set static-route 172.16.0.0/12 nexthop gateway address 192.168.1.1 on
+```
+
+**In the template user-script:**
+```clish
+set hostname <gateway-name>
+##!! routing-table.conf
+```
+
+**Result after injection (for gw-3950-01):**
+```clish
+set hostname gw-3950-01
+set static-route 10.0.0.0/8 nexthop gateway address 192.168.1.1 on
+set static-route 172.16.0.0/12 nexthop gateway address 192.168.1.1 on
+```
+
+### Example: Shared Configuration
+
+**File:** `backend/config_files/dns-settings.conf` (shared — used by all gateways)
+
+```clish
+set dns primary 8.8.8.8
+set dns secondary 8.8.4.4
+set dns suffix example.com
+```
+
+### Example: Per-Gateway Override
+
+If `gw-3950-01` needs different DNS:
+- `backend/config_files/gw-3950-01/dns-settings.conf` → used for gw-3950-01
+- `backend/config_files/dns-settings.conf` → used for all other gateways
+
+---
