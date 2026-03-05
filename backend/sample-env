@@ -1,0 +1,42 @@
+# Application Settings
+APP_NAME="Check Point Gateway Deployer"
+APP_VERSION="1.0.0"
+SECRET_KEY=your-secret-key-here-change-in-production
+
+# Server Settings
+HOST=0.0.0.0
+PORT=8000
+
+# Zero Touch Portal API
+ZERO_TOUCH_BASE_URL=https://zerotouch.checkpoint.com/ZeroTouch/web_api/v2
+ZERO_TOUCH_CLIENT_ID=<client-id>
+ZERO_TOUCH_SECRET_KEY=<secret-key>
+
+# Smart-1 Cloud API (optional)
+SMART1_CLOUD_BASE_URL=https://emeaexpertsmuczt-ssg94h91.maas.checkpoint.com/562e459f-7eac-486d-bd6b-e1c6a5e274fb/web_api
+SMART1_CLOUD_SECRET_KEY=<secret-key>
+
+# On-Premises Management Server
+MGMT_BASE_URL=https://<mds-or-sms-IP>:443/web_api/
+MGMT_SERVER_PORT=443
+MGMT_SERVER_API_KEY=<secret-key>
+
+# Spark Management (optional)
+SPARK_MGMT_BASE_URL=https://cloudinfra-gw.portal.checkpoint.com/auth/external
+SPARK_CLIENT_ID=<client-id>
+SPARK_SECRET_KEY=<secret-key>
+
+# Session Settings
+SESSION_TIMEOUT=3600
+SESSION_SECRET=your-session-secret-change-in-production
+
+# CORS Settings (for development)
+ALLOWED_ORIGINS=["http://localhost:8000", "http://127.0.0.1:8000"]
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FILE=logs/app.log
+DEBUG=false
+
+# API body logging: none | req | resp | all
+API_DEBUG=all
