@@ -264,13 +264,13 @@ After=network.target
 [Service]
 Type=simple
 User=deployuser
-WorkingDirectory=/opt/checkpoint-gateway-deployer/backend
-ExecStart=/opt/checkpoint-gateway-deployer/backend/venv/bin/python -m app.main
+WorkingDirectory=/opt/<your-path>/backend
+ExecStart=/opt/<your-path>/backend/venv/bin/python -m app.main
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
 StandardError=journal
-EnvironmentFile=/opt/checkpoint-gateway-deployer/backend/.env
+EnvironmentFile=/opt/<your-path>/backend/.env
 
 [Install]
 WantedBy=multi-user.target
@@ -1394,4 +1394,5 @@ checkpoint-gateway-deployer/
     ├── js/app.js                # Application logic
     └── css/                     # Stylesheets
 ```
+
 
