@@ -206,19 +206,19 @@ Then edit `backend/.env` with your values. Below are flow-specific minimal confi
 
 ---
 
-## 5. Starting the Server
+## 5. Starting the API listener 
 
 ```bash
 cd backend
 
-# Ensure virtual environment is activated
+# Ensure virtual environment is activated if you are using a virualized python venv
 # Windows: venv\Scripts\activate
 # Linux:   source venv/bin/activate
 
 python -m app.main
 ```
 
-You should see output similar to:
+You should see in app.log output similar to:
 
 ```
 INFO     Check Point Gateway Deployer v1.0.0
@@ -227,11 +227,13 @@ INFO     Uvicorn running on http://0.0.0.0:8000
 
 **Verify the server is running:**
 
-- **Web UI:** Open http://localhost:8000 in your browser
-- **API Docs:** Open http://localhost:8000/docs for interactive Swagger documentation
 - **Health Check:** `curl http://localhost:8000/health`
+<img width="345" height="159" alt="image" src="https://github.com/user-attachments/assets/ceec1e20-f04e-4b8b-a705-e3b2ebc22001" />
 
-[screenshot: browser showing the main page with empty sidebar]
+- **Web UI:** Open http://localhost:8000 in your browser
+
+<img width="1092" height="652" alt="image" src="https://github.com/user-attachments/assets/23fd479e-64a7-407f-837d-81d1d5853f94" />
+
 
 ---
 
@@ -1392,3 +1394,4 @@ checkpoint-gateway-deployer/
     ├── js/app.js                # Application logic
     └── css/                     # Stylesheets
 ```
+
