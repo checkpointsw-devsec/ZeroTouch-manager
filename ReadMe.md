@@ -1256,6 +1256,8 @@ Update `ALLOWED_ORIGINS` in `.env` to match the URL you are accessing the applic
 ### Wrong IP Sent to Zero Touch
 
 Each gateway must have its own `gateway_ipv4` in the CSV. If left as the template default, all gateways sharing a template will receive the same IP.
+this is necessary for LSM or MDS/SMS deployment. you can override the configuration of management Interface and the interface configuration over file injection.
+this methode is discribed in this ReadMe.md
 
 ---
 
@@ -1382,3 +1384,4 @@ If `gw-3950-01` needs different DNS:
 - `backend/config_files/dns-settings.conf` → used for all other gateways
 
 ---
+
