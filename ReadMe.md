@@ -12,13 +12,9 @@ A hands-on lab guide for deploying Check Point gateways using the **Check Point 
 2. [Lab Prerequisites](#2-lab-prerequisites)
 3. [Installation and Setup](#3-installation-and-setup)
    - 3.1 [Clone and Install](#31-clone-and-install)
-   - 3.2 [Directory Structure](#32-directory-structure)
 4. [Configuring the .env File](#4-configuring-the-env-file)
-   - 4.1 [Minimal .env for Smart-1 Cloud](#41-minimal-env-for-smart-1-cloud)
-   - 4.2 [Minimal .env for SMS / LSM](#42-minimal-env-for-sms--lsm)
-   - 4.3 [Minimal .env for SMP](#43-minimal-env-for-smp)
-   - 4.4 [Full .env Reference](#44-full-env-reference)
-   - 4.5 [Common .env Mistakes](#45-common-env-mistakes)
+   - 4.1 [Full .env Reference](#44-full-env-reference)
+   - 4.2 [Common .env Mistakes](#45-common-env-mistakes)
 5. [Starting the Server](#5-starting-the-server)
 6. [Nginx Reverse Proxy and HTTPS](#6-nginx-reverse-proxy-and-https)
    - 6.1 [Why Use Nginx](#61-why-use-nginx)
@@ -74,7 +70,8 @@ A hands-on lab guide for deploying Check Point gateways using the **Check Point 
 14. [Troubleshooting](#14-troubleshooting)
 15. [Security Considerations](#15-security-considerations)
 16. [Appendix — Config File Injection Examples](#16-appendix--config-file-injection-examples)
-
+Appendix
+- A.1 [Directory Structure](#32-directory-structure)
 ---
 
 ## 1. Lab Overview
@@ -91,24 +88,28 @@ The **Check Point Gateway Deployer** automates the provisioning and deployment o
 **Architecture:**
 
 ```
-Browser (Vue.js)  ──or──  deploy-batch.py (CLI)
+Browser (Vue.js)  ──  or  ──  deploy-batch.py (CLI)
          │                        │
-         │  HTTP / SSE            │  HTTP / SSE
-         ▼                        ▼
-   FastAPI Backend (Python)
-         │
-    ┌────┼────┬────────┐
-    ▼    ▼    ▼        ▼
-  S1C  SMS  LSM      SMP
-  Orch Orch Orch     Orch
-    │    │    │        │
-    ▼    ▼    ▼        ▼
- Smart-1  SMS/MDS   Zero
- Cloud              Touch
-    │    │    │     Portal
-    └────┴────┴────────┘
-         ▼
-   Zero Touch Portal
+         │                        │  
+         ▼     HTTP / SSE         ▼
+         └────────────────────────┘
+                   │
+                   ▼
+          FastAPI Backend (Python)
+                   │
+              ┌────┼────┬────────┐
+              ▼    ▼    ▼        ▼
+            S1C  SMS  LSM      SMP
+            Orch Orch Orch     Orch
+              │    │    │        │
+              ▼    ▼    ▼        │
+           Smart-1  SMS/MDS      │
+           Cloud                 │
+              │    │    │        ▼
+              └────┴────┴────────┘
+                   │
+                   ▼
+             Zero Touch Portal
 ```
 
 ---
@@ -122,7 +123,9 @@ Before starting, ensure you have the following:
 | **Python 3.11+** | Installed on the deployer host |
 | **Zero Touch Portal account** | Client ID + Secret Key (Account Settings in the Zero Touch Portal) |
 | **Zero Touch templates** | Pre-configured for each gateway hardware model (Spark and/or Gaia) |
-| **Smart-1 Cloud tenant** *(for S1C flow)* | Tenant URL + API Key or Secret Key |
+
+for each of the Management Types of your need:
+| **Smart-1 Cloud tenant** *(for S1C flow and/or SMP)* | Tenant URL + API Key or Secret Key |
 | **SMS / MDS** *(for SMS/LSM flows)* | On-premises management server reachable from the deployer host, with an API key configured |
 | **Gateway hardware** | Physical gateway appliances with known MAC addresses |
 | **Network connectivity** | Deployer host can reach Zero Touch Portal (HTTPS) and the management server (port 443) |
@@ -136,51 +139,19 @@ Before starting, ensure you have the following:
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd checkpoint-gateway-deployer
-
-# Create a Python virtual environment
+cd <destination folder>
 cd backend
-python -m venv venv
 
-# Activate the virtual environment
-# Windows:
-venv\Scripts\activate
-# Linux / macOS:
-source venv/bin/activate
+# in case you want to run it in a Python virtual environment:
+   python -m venv venv 
+   # Activate the virtual environment
+   # Windows:
+   venv\Scripts\activate
+   # Linux / macOS:
+   source venv/bin/activate
 
 # Install Python dependencies
 pip install -r requirements.txt
-```
-
-[screenshot: terminal showing successful pip install]
-
-### 3.2 Directory Structure
-
-```
-checkpoint-gateway-deployer/
-├── deploy-batch.py              # CLI batch deployment tool
-├── requirements.txt             # Python dependencies
-├── sample_smart1_cloud.csv      # Sample CSV — Smart-1 Cloud
-├── sample_sms.csv               # Sample CSV — SMS
-├── sample_lsm.csv               # Sample CSV — LSM
-├── sample_smp.csv               # Sample CSV — SMP
-├── backend/
-│   ├── .env                     # Environment configuration (you create this)
-│   ├── app/
-│   │   ├── main.py              # FastAPI application entry point
-│   │   ├── config.py            # Settings loaded from .env
-│   │   ├── api/                 # REST API endpoints
-│   │   ├── models/              # Pydantic data models
-│   │   └── services/            # Orchestrators and service clients
-│   ├── config_files/            # Per-gateway configuration files for ##!! injection
-│   │   ├── gw-1590-01/
-│   │   ├── gw-3950-01/
-│   │   └── ...
-│   └── logs/                    # Application logs (auto-created)
-└── frontend/
-    ├── index.html               # Single-page Vue.js application
-    ├── js/app.js                # Application logic
-    └── css/                     # Stylesheets
 ```
 
 ---
@@ -197,62 +168,8 @@ cp backend/.sample-env backend/.env
 
 Then edit `backend/.env` with your values. Below are flow-specific minimal configurations.
 
-### 4.1 Minimal .env for Smart-1 Cloud
 
-If you only need the Smart-1 Cloud flow:
-
-```ini
-# Server
-HOST=0.0.0.0
-PORT=8000
-
-# Zero Touch Portal (required for all flows)
-ZERO_TOUCH_CLIENT_ID=your-zt-client-id
-ZERO_TOUCH_SECRET_KEY=your-zt-secret-key
-
-# Smart-1 Cloud
-SMART1_CLOUD_BASE_URL=https://your-tenant.maas.checkpoint.com/your-tenant-id/web_api
-SMART1_CLOUD_SECRET_KEY=your-s1c-secret-key
-
-# Logging
-LOG_LEVEL=INFO
-```
-
-### 4.2 Minimal .env for SMS / LSM
-
-If you need the SMS or LSM flows (on-premises management server):
-
-```ini
-# Server
-HOST=0.0.0.0
-PORT=8000
-
-# Zero Touch Portal
-ZERO_TOUCH_CLIENT_ID=your-zt-client-id
-ZERO_TOUCH_SECRET_KEY=your-zt-secret-key
-
-# Management Server
-MGMT_BASE_URL=https://192.168.10.78:443/web_api/
-MGMT_SERVER_PORT=443
-MGMT_SERVER_API_KEY=your-mgmt-api-key
-
-# Logging
-LOG_LEVEL=INFO
-```
-
-### 4.3 Minimal .env for SMP
-
-SMP only needs Zero Touch credentials — no management server:
-
-```ini
-HOST=0.0.0.0
-PORT=8000
-
-ZERO_TOUCH_CLIENT_ID=your-zt-client-id
-ZERO_TOUCH_SECRET_KEY=your-zt-secret-key
-```
-
-### 4.4 Full .env Reference
+### 4.1 Full .env Reference
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -277,7 +194,7 @@ ZERO_TOUCH_SECRET_KEY=your-zt-secret-key
 | `SESSION_SECRET` | | (default) | Session signing secret — change in production |
 | `SHOW_SECRETS_IN_LOGFILE` | | `false` | Log passwords/OTPs in plain text (debugging only) |
 
-### 4.5 Common .env Mistakes
+### 4.2 Common .env Mistakes
 
 | Mistake | Symptom | Fix |
 |---|---|---|
@@ -1444,3 +1361,34 @@ Here are additional topics you may want to include as the lab evolves:
 - **Scaling the Deployment** — running multiple batch deployments in parallel, tuning `SIC_TIMEOUT`
 - **Backup and Recovery** — exporting deployment results, maintaining a gateway inventory
 - **Custom User-Script Development** — authoring advanced clish scripts with file injection for specific use cases
+
+---
+# Appendix
+# A.1 Directory Structure
+
+```
+checkpoint-gateway-deployer/
+├── deploy-batch.py              # CLI batch deployment tool
+├── requirements.txt             # Python dependencies
+├── sample_smart1_cloud.csv      # Sample CSV — Smart-1 Cloud
+├── sample_sms.csv               # Sample CSV — SMS
+├── sample_lsm.csv               # Sample CSV — LSM
+├── sample_smp.csv               # Sample CSV — SMP
+├── backend/
+│   ├── .env                     # Environment configuration (you create this)
+│   ├── app/
+│   │   ├── main.py              # FastAPI application entry point
+│   │   ├── config.py            # Settings loaded from .env
+│   │   ├── api/                 # REST API endpoints
+│   │   ├── models/              # Pydantic data models
+│   │   └── services/            # Orchestrators and service clients
+│   ├── config_files/            # Per-gateway configuration files for ##!! injection
+│   │   ├── gw-1590-01/
+│   │   ├── gw-3950-01/
+│   │   └── ...
+│   └── logs/                    # Application logs (auto-created)
+└── frontend/
+    ├── index.html               # Single-page Vue.js application
+    ├── js/app.js                # Application logic
+    └── css/                     # Stylesheets
+```
