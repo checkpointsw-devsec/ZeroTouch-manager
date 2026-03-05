@@ -1,0 +1,7 @@
+mac_address,account_id,template_id,template_name,gateway_name,mgmt_server_ip,sic_otp,gateway_ipv4,version,hardware,policy_name,enable_app_control,enable_ips,enable_url_filtering,enable_content_awareness,enable_ipsec,vpn_community,vpn_role,domain
+00:1C:7F:9B:AE:8D,9075116,940560220,Master_MDS-Spark,gw-1590w-01,192.168.10.78,vpn123,192.168.10.130,R81.10,1570/1590 Appliances,Standard,true,true,false,false,true,MucLabTest,satellite,Sub_Dom1
+00:1C:7F:B1:3F:29,9075116,940560220,Master_MDS-Spark,gw-1590-01,192.168.10.78,vpn456,192.168.10.131,R81.10,1570/1590 Appliances,Standard,true,true,true,false,true,MucLabTest,center,Sub_Dom1
+00:1C:7F:CB:FE:F0,9075116,754093852,Master_MDS-3950,gw-3950-01,192.168.10.78,vpnChangeMe,192.168.10.81,R82.10,3900 Appliances,Standard,true,true,false,true,false,MucLabTest,satellite,Sub_Dom1
+00:1C:7F:CB:FF:31,9075116,754093852,Master_MDS-3950,gw-3950-02,192.168.10.78,vpnChangeMe,192.168.10.82,R82.10,3900 Appliances,Standard,true,true,false,true,false,MucLabTest,satellite,Sub_Dom1
+00:1C:7F:CC:E0:8A,9075116,754093852,Master_MDS-3950,gw-3970-01,192.168.10.78,vpnChangeMe,192.168.10.86,R82.10,3900 Appliances,Standard,true,true,false,true,false,MucLabTest,satellite,Sub_Dom1
+00:1C:7F:CC:EA:56,9075116,754093852,Master_MDS-3950,gw-3970-02,192.168.10.78,vpnChangeMe,192.168.10.87,R82.10,3900 Appliances,Standard,true,true,false,true,false,MucLabTest,satellite,Sub_Dom1

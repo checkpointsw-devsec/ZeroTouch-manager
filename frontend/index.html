@@ -1,0 +1,858 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Point Gateway Deployer</title>
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar navbar-dark bg-primary">
+            <div class="container-fluid">
+                <span class="navbar-brand mb-0 h1">
+                    <i class="bi bi-shield-check"></i>
+                    Check Point Gateway Deployer
+                </span>
+                <span class="text-white" v-if="authenticated">
+                    <i class="bi bi-person-circle"></i>
+                    Connected to Zero Touch Portal
+                </span>
+            </div>
+        </nav>
+
+        <!-- App Layout: Sidebar + Main -->
+        <div class="app-layout">
+
+            <!-- ==================== LEFT SIDEBAR ==================== -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <i class="bi bi-gear-wide-connected me-1"></i> Setup
+                </div>
+
+                <!-- 1. Login ZT -->
+                <div class="sidebar-section">
+                    <button class="btn btn-sm w-100"
+                            :class="authenticated ? 'btn-outline-success disabled' : 'btn-primary'"
+                            @click="login"
+                            :disabled="authenticated || loading">
+                        <span v-if="loading && !authenticated" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else-if="authenticated" class="bi bi-check-circle me-1"></i>
+                        <i v-else class="bi bi-box-arrow-in-right me-1"></i>
+                        {{ authenticated ? 'Connected' : 'Login to Zero Touch' }}
+                    </button>
+                </div>
+
+                <!-- 2. Account -->
+                <div class="sidebar-section">
+                    <label class="sidebar-label">Account</label>
+                    <select class="form-select form-select-sm"
+                            v-model="selectedAccountId"
+                            @change="onAccountSelect"
+                            :disabled="!authenticated || accounts.length === 0">
+                        <option value="">Select account...</option>
+                        <option v-for="a in accounts" :key="a.id" :value="a.id">
+                            {{ a.name || 'Account ' + a.id }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- 3. Gateway Type -->
+                <div class="sidebar-section">
+                    <label class="sidebar-label">Gateway Type</label>
+                    <select class="form-select form-select-sm"
+                            v-model="gatewayType"
+                            :disabled="!selectedAccount">
+                        <option value="">Select type...</option>
+                        <option value="spark">Spark (Quantum Spark)</option>
+                        <option value="gaia">Full-Gaia (Quantum Force)</option>
+                    </select>
+                </div>
+
+                <!-- 4. Template -->
+                <div class="sidebar-section">
+                    <label class="sidebar-label">
+                        Template
+                        <span v-if="filteredTemplates.length" class="badge bg-secondary ms-1">{{ filteredTemplates.length }}</span>
+                    </label>
+                    <select class="form-select form-select-sm"
+                            v-model="selectedTemplateId"
+                            @change="onTemplateSelect"
+                            :disabled="!gatewayType || filteredTemplates.length === 0">
+                        <option value="">Select template...</option>
+                        <option v-for="t in filteredTemplates" :key="t.id" :value="t.id">
+                            {{ t.name }}
+                        </option>
+                    </select>
+                    <small v-if="gatewayType && filteredTemplates.length === 0 && allTemplates.length > 0"
+                           class="sidebar-hint text-warning">
+                        No {{ gatewayType === 'spark' ? 'Spark' : 'Gaia' }} templates found
+                    </small>
+                </div>
+
+                <!-- 5. MAC Address -->
+                <div class="sidebar-section">
+                    <label class="sidebar-label">MAC Address</label>
+                    <input type="text"
+                           class="form-control form-control-sm font-monospace"
+                           v-model="macAddress"
+                           :disabled="!selectedTemplate"
+                           placeholder="00:1C:7F:XX:XX:XX"
+                           maxlength="17">
+                </div>
+
+                <!-- 6. Gateway Name -->
+                <div class="sidebar-section">
+                    <label class="sidebar-label">Gateway Name</label>
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           v-model="gatewayName"
+                           :disabled="!macAddressValid"
+                           placeholder="e.g., gw-1590-01"
+                           pattern="^[a-zA-Z0-9_-]+$">
+                    <small class="sidebar-hint text-muted">Alphanumeric, hyphens, underscores</small>
+                </div>
+
+                <!-- 7. Management Platform -->
+                <div class="sidebar-section">
+                    <label class="sidebar-label">Management Platform</label>
+                    <select class="form-select form-select-sm"
+                            v-model="managementPlatform"
+                            :disabled="!macAddressValid">
+                        <option value="">Select platform...</option>
+                        <option value="smart1-cloud">Smart-1 Cloud</option>
+                        <option value="sms">MDS / SMS</option>
+                        <option value="lsm">LSM</option>
+                        <option v-if="gatewayType === 'spark'" value="smp">SMP (Spark Only)</option>
+                    </select>
+                </div>
+
+                <!-- Claim / Unclaim -->
+                <div class="sidebar-section" v-if="sidebarReady">
+                    <button v-if="!claimed"
+                            class="btn btn-warning btn-sm w-100"
+                            @click="claimGateway"
+                            :disabled="claiming">
+                        <span v-if="claiming" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="bi bi-hand-index-thumb me-1"></i>
+                        Claim Gateway
+                    </button>
+                    <button v-else
+                            class="btn btn-outline-danger btn-sm w-100"
+                            @click="unclaimGateway"
+                            :disabled="unclaiming || deploying">
+                        <span v-if="unclaiming" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="bi bi-x-circle me-1"></i>
+                        Unclaim Gateway
+                    </button>
+                </div>
+
+                <!-- Sidebar Footer -->
+                <div class="sidebar-footer">
+                    <div v-if="sidebarReady && claimed" class="text-success small mb-2">
+                        <i class="bi bi-check-circle-fill me-1"></i> Claimed — {{ selectedTemplate?.name }}
+                    </div>
+                    <button v-if="authenticated" class="btn btn-outline-secondary btn-sm w-100" @click="resetWorkflow">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </button>
+                </div>
+            </aside>
+
+            <!-- ==================== MAIN CONTENT ==================== -->
+            <main class="main-content">
+
+                <!-- Alert Messages -->
+                <div v-if="alert.show" :class="'alert alert-' + alert.type + ' alert-dismissible fade show'" role="alert">
+                    {{ alert.message }}
+                    <button type="button" class="btn-close" @click="alert.show = false"></button>
+                </div>
+
+                <!-- ===== EMPTY STATE ===== -->
+                <div v-if="!sidebarReady" class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-arrow-left-circle"></i>
+                    </div>
+                    <h5>Configure Gateway Deployment</h5>
+                    <p class="text-muted">Complete the setup panel on the left to begin.</p>
+                    <div class="checklist">
+                        <div :class="authenticated ? 'text-success' : 'text-muted'">
+                            <i :class="authenticated ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Login to Zero Touch Portal
+                        </div>
+                        <div :class="selectedAccount ? 'text-success' : 'text-muted'">
+                            <i :class="selectedAccount ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Select Account
+                        </div>
+                        <div :class="gatewayType ? 'text-success' : 'text-muted'">
+                            <i :class="gatewayType ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Choose Gateway Type
+                        </div>
+                        <div :class="selectedTemplate ? 'text-success' : 'text-muted'">
+                            <i :class="selectedTemplate ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Select Template
+                        </div>
+                        <div :class="macAddressValid ? 'text-success' : 'text-muted'">
+                            <i :class="macAddressValid ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Enter MAC Address
+                        </div>
+                        <div :class="gatewayName.trim() ? 'text-success' : 'text-muted'">
+                            <i :class="gatewayName.trim() ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Enter Gateway Name
+                        </div>
+                        <div :class="managementPlatform ? 'text-success' : 'text-muted'">
+                            <i :class="managementPlatform ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            Select Management Platform
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== CONFIGURATION PANEL ===== -->
+                <div v-else>
+
+                    <!-- Summary Badges -->
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-1">{{ selectedTemplate.name }}</span>
+                        <span class="badge bg-secondary me-1">{{ gatewayType === 'spark' ? 'Spark' : 'Full-Gaia' }}</span>
+                        <span class="badge bg-info me-1 font-monospace">{{ macAddress }}</span>
+                        <span class="badge bg-dark me-1">{{ managementPlatformLabel }}</span>
+                        <span class="badge bg-success" v-if="claimed"><i class="bi bi-check-circle me-1"></i>{{ gatewayName }}</span>
+                    </div>
+
+
+
+                    <!-- ===== TABBED PANEL (after claim) ===== -->
+                    <div v-if="claimed">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-mgmt" data-bs-toggle="tab" data-bs-target="#pane-mgmt"
+                                        type="button" role="tab" aria-controls="pane-mgmt" aria-selected="true">
+                                    <i class="bi bi-gear me-1"></i>{{ managementPlatformLabel }} Configuration
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation" v-if="gatewayType === 'gaia'">
+                                <button class="nav-link" id="tab-network" data-bs-toggle="tab" data-bs-target="#pane-network"
+                                        type="button" role="tab" aria-controls="pane-network" aria-selected="false">
+                                    <i class="bi bi-ethernet me-1"></i>Network Configuration
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-script" data-bs-toggle="tab" data-bs-target="#pane-script"
+                                        type="button" role="tab" aria-controls="pane-script" aria-selected="false">
+                                    <i class="bi bi-terminal me-1"></i>User Script
+                                    <span v-if="detectedPlaceholders.some(p => !p.resolved)" class="badge bg-warning text-dark ms-1">
+                                        {{ detectedPlaceholders.filter(p => !p.resolved).length }}
+                                    </span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-log" data-bs-toggle="tab" data-bs-target="#pane-log"
+                                        type="button" role="tab" aria-controls="pane-log" aria-selected="false">
+                                    <i class="bi bi-journal-text me-1"></i>Deployment Log
+                                    <span v-if="deploying" class="spinner-border spinner-border-sm ms-1" style="width:.75rem;height:.75rem"></span>
+                                    <span v-else-if="deploymentLog.length > 0" class="badge bg-secondary ms-1">{{ deploymentLog.length }}</span>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content border border-top-0 rounded-bottom">
+
+                            <!-- ── TAB 1: Management Configuration ── -->
+                            <div class="tab-pane fade show active p-3" id="pane-mgmt" role="tabpanel" aria-labelledby="tab-mgmt">
+
+                                <!-- ===== SMART-1 CLOUD ===== -->
+                                <div v-if="managementPlatform === 'smart1-cloud'">
+                                    <h6 class="mb-3"><i class="bi bi-cloud-check me-2 text-primary"></i>Smart-1 Cloud Configuration</h6>
+                                    <div class="row g-3">
+                                        <!-- SIC Key -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">SIC One-Time Password <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input :type="s1c.showSicKey ? 'text' : 'password'"
+                                                       class="form-control"
+                                                       v-model="s1c.sicKey"
+                                                       placeholder="e.g., vpn123"
+                                                       minlength="4"
+                                                       autocomplete="off">
+                                                <button class="btn btn-outline-secondary" type="button" @click="s1c.showSicKey = !s1c.showSicKey">
+                                                    <i :class="s1c.showSicKey ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                                </button>
+                                            </div>
+                                            <small class="form-text text-muted">Minimum 4 characters</small>
+                                        </div>
+                                        <!-- Hardware -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Hardware</label>
+                                            <select class="form-select" v-model="s1c.hardware" :disabled="s1c.hardwareLoading">
+                                                <option value="">{{ s1c.hardwareLoading ? 'Loading...' : 'Auto-detect (recommended)' }}</option>
+                                                <option v-for="hw in s1c.hardwareOptions" :key="hw" :value="hw">{{ hw }}</option>
+                                            </select>
+                                        </div>
+                                        <!-- OS Version (Spark only) -->
+                                        <div class="col-md-6" v-if="gatewayType === 'spark'">
+                                            <label class="form-label">OS Version</label>
+                                            <select class="form-select" v-model="s1c.osVersion">
+                                                <option value="R81.10">R81.10 (Recommended for Spark)</option>
+                                                <option value="R82">R82</option>
+                                            </select>
+                                        </div>
+                                        <!-- IP Configuration -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Smart-1 Cloud IP</label>
+                                            <select class="form-select" v-model="s1c.autoGenerateIp">
+                                                <option :value="true">Auto-generate IP</option>
+                                                <option :value="false">Use specific IP</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6" v-if="!s1c.autoGenerateIp">
+                                            <label class="form-label">IP Address</label>
+                                            <input type="text" class="form-control" v-model="s1c.ipAddress" placeholder="e.g., 192.168.1.100">
+                                        </div>
+                                    </div>
+                                    <!-- Security Blades -->
+                                    <div class="mt-4">
+                                        <label class="form-label fw-semibold">Security Blades</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cFirewall" v-model="s1c.firewall" disabled>
+                                                    <label class="form-check-label" for="s1cFirewall">
+                                                        <i class="bi bi-shield-check text-success"></i> Firewall (always on)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cVpn" v-model="s1c.vpn">
+                                                    <label class="form-check-label" for="s1cVpn"><i class="bi bi-lock"></i> VPN</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cIps" v-model="s1c.ips">
+                                                    <label class="form-check-label" for="s1cIps"><i class="bi bi-shield-exclamation"></i> IPS</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cAppControl" v-model="s1c.applicationControl">
+                                                    <label class="form-check-label" for="s1cAppControl"><i class="bi bi-app-indicator"></i> Application Control</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cUrlFilter" v-model="s1c.urlFiltering">
+                                                    <label class="form-check-label" for="s1cUrlFilter"><i class="bi bi-link-45deg"></i> URL Filtering</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cAntiBot" v-model="s1c.antiBot">
+                                                    <label class="form-check-label" for="s1cAntiBot"><i class="bi bi-robot"></i> Anti-Bot</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cAntiVirus" v-model="s1c.antiVirus">
+                                                    <label class="form-check-label" for="s1cAntiVirus"><i class="bi bi-bug"></i> Anti-Virus</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cThreatEmu" v-model="s1c.threatEmulation">
+                                                    <label class="form-check-label" for="s1cThreatEmu"><i class="bi bi-file-earmark-binary"></i> Threat Emulation</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="s1cContentAware" v-model="s1c.contentAwareness">
+                                                    <label class="form-check-label" for="s1cContentAware"><i class="bi bi-eye"></i> Content Awareness</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- VPN Community -->
+                                    <div class="row g-3 mt-1" v-if="s1c.vpn">
+                                        <div class="col-md-6">
+                                            <label class="form-label">VPN Community (optional)</label>
+                                            <input type="text" class="form-control" v-model="s1c.vpnCommunity" placeholder="e.g., MyVPNCommunity">
+                                        </div>
+                                        <div class="col-md-6" v-if="s1c.vpnCommunity">
+                                            <label class="form-label">VPN Role</label>
+                                            <select class="form-select" v-model="s1c.vpnRole">
+                                                <option value="satellite">Satellite Gateway</option>
+                                                <option value="center">Center Gateway</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Policy + Activation Link -->
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Policy Package (optional)</label>
+                                            <input type="text" class="form-control" v-model="s1c.policyName" placeholder="e.g., Standard">
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end" v-if="gatewayType === 'gaia'">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="s1cActivation" v-model="s1c.openActivationLink">
+                                                <label class="form-check-label" for="s1cActivation">
+                                                    Open activation link in new tab
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ===== LSM ===== -->
+                                <div v-if="managementPlatform === 'lsm'">
+                                    <h6 class="mb-3"><i class="bi bi-diagram-3 me-2 text-warning"></i>LSM Configuration</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Management Server IP</label>
+                                            <input type="text" class="form-control" v-model="lsm.mgmtServerIp"
+                                                   placeholder="e.g., 192.168.10.78">
+                                            <small class="form-text text-muted">Replaces &lt;mgmt-server-ip&gt; in user-script</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">SIC One-Time Password <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input :type="lsm.showSicKey ? 'text' : 'password'"
+                                                       class="form-control"
+                                                       v-model="lsm.sicKey"
+                                                       placeholder="e.g., vpn123"
+                                                       minlength="4"
+                                                       autocomplete="off">
+                                                <button class="btn btn-outline-secondary" type="button" @click="lsm.showSicKey = !lsm.showSicKey">
+                                                    <i :class="lsm.showSicKey ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                                </button>
+                                            </div>
+                                            <small class="form-text text-muted">Minimum 4 characters</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Security Profile <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" v-model="lsm.securityProfile"
+                                                   placeholder="e.g., SP_1590-01-G1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Provisioning Profile <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" v-model="lsm.provisioningProfile"
+                                                   placeholder="e.g., HWP_1590_G1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Gateway IPv4 (optional)</label>
+                                            <input type="text" class="form-control" v-model="lsm.gatewayIpv4"
+                                                   placeholder="e.g., 192.168.10.130">
+                                            <small class="form-text text-muted">Sets mgmt-eth-ip-address-ipv4 in Zero Touch</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Domain (MDS only)</label>
+                                            <input type="text" class="form-control" v-model="lsm.domain"
+                                                   placeholder="e.g., Sub_Dom1">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ===== SMS / MDS ===== -->
+                                <div v-if="managementPlatform === 'sms'">
+                                    <h6 class="mb-3"><i class="bi bi-server me-2 text-success"></i>SMS / MDS Configuration</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Management Server IP <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" v-model="sms.mgmtServerIp"
+                                                   placeholder="e.g., 192.168.10.78"
+                                                   @blur="fetchSmsGatewayCapabilities">
+                                            <small class="form-text text-muted">Hardware & version lists load on blur</small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Domain (MDS only)</label>
+                                            <input type="text" class="form-control" v-model="sms.domain"
+                                                   placeholder="e.g., Sub_Dom1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Gateway IPv4 Address <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" v-model="sms.gatewayIpv4"
+                                                   placeholder="e.g., 10.0.0.1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">SIC One-Time Password <span class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input :type="sms.showSicKey ? 'text' : 'password'"
+                                                       class="form-control"
+                                                       v-model="sms.sicKey"
+                                                       placeholder="e.g., vpn123"
+                                                       minlength="4"
+                                                       autocomplete="off">
+                                                <button class="btn btn-outline-secondary" type="button" @click="sms.showSicKey = !sms.showSicKey">
+                                                    <i :class="sms.showSicKey ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Hardware <span class="text-danger">*</span></label>
+                                            <select class="form-select" v-model="sms.hardware" :disabled="sms.capabilitiesLoading">
+                                                <option value="" disabled>{{ sms.capabilitiesLoading ? 'Loading...' : 'Select hardware model' }}</option>
+                                                <option v-for="hw in sms.hardwareOptions" :key="hw" :value="hw">{{ hw }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">OS Version <span class="text-danger">*</span></label>
+                                            <select class="form-select" v-model="sms.version" :disabled="sms.capabilitiesLoading">
+                                                <option value="" disabled>{{ sms.capabilitiesLoading ? 'Loading...' : 'Select OS version' }}</option>
+                                                <option v-for="ver in sms.versionOptions" :key="ver" :value="ver">{{ ver }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Security Blades -->
+                                    <div class="mt-4">
+                                        <label class="form-label fw-semibold">Security Blades</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsFirewall" disabled checked>
+                                                    <label class="form-check-label" for="smsFirewall">
+                                                        <i class="bi bi-shield-check text-success"></i> Firewall (always on)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsIpsec" v-model="sms.enableIpsec">
+                                                    <label class="form-check-label" for="smsIpsec"><i class="bi bi-lock"></i> IPsec VPN</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsIps" v-model="sms.enableIps">
+                                                    <label class="form-check-label" for="smsIps"><i class="bi bi-shield-exclamation"></i> IPS</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsAppControl" v-model="sms.enableAppControl">
+                                                    <label class="form-check-label" for="smsAppControl"><i class="bi bi-app-indicator"></i> Application Control</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsUrlFilter" v-model="sms.enableUrlFiltering">
+                                                    <label class="form-check-label" for="smsUrlFilter"><i class="bi bi-link-45deg"></i> URL Filtering</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsContentAware" v-model="sms.enableContentAwareness">
+                                                    <label class="form-check-label" for="smsContentAware"><i class="bi bi-eye"></i> Content Awareness</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsAntiBot" v-model="sms.enableAntiBot">
+                                                    <label class="form-check-label" for="smsAntiBot"><i class="bi bi-robot"></i> Anti-Bot</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsAntiVirus" v-model="sms.enableAntiVirus">
+                                                    <label class="form-check-label" for="smsAntiVirus"><i class="bi bi-bug"></i> Anti-Virus</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="smsThreatEmu" v-model="sms.enableThreatEmulation">
+                                                    <label class="form-check-label" for="smsThreatEmu"><i class="bi bi-file-earmark-binary"></i> Threat Emulation</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- VPN Community -->
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6">
+                                            <label class="form-label">VPN Community (optional)</label>
+                                            <input type="text" class="form-control" v-model="sms.vpnCommunity" placeholder="e.g., MyVPNCommunity">
+                                        </div>
+                                        <div class="col-md-6" v-if="sms.vpnCommunity">
+                                            <label class="form-label">VPN Role</label>
+                                            <select class="form-select" v-model="sms.vpnRole">
+                                                <option value="satellite">Satellite Gateway</option>
+                                                <option value="center">Center Gateway</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- Policy + Activation -->
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Policy Package</label>
+                                            <input type="text" class="form-control" v-model="sms.policyName" placeholder="e.g., Standard">
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end" v-if="gatewayType === 'gaia'">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="smsActivation" v-model="sms.openActivationLink">
+                                                <label class="form-check-label" for="smsActivation">
+                                                    Open activation link in new tab
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ===== SMP ===== -->
+                                <div v-if="managementPlatform === 'smp'">
+                                    <h6 class="mb-3"><i class="bi bi-hdd-network me-2 text-info"></i>SMP Deployment</h6>
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Spark Management Platform</strong> &mdash;
+                                        The gateway will be claimed in Zero Touch and marked as ready.
+                                        It will connect to SMP automatically when it boots up.
+                                        No additional configuration is needed.
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- ── TAB: Network Configuration (Gaia only) ── -->
+                            <div class="tab-pane fade p-3" id="pane-network" role="tabpanel" aria-labelledby="tab-network"
+                                 v-if="gatewayType === 'gaia'">
+                                <h6 class="mb-3"><i class="bi bi-ethernet me-2 text-primary"></i>Network Configuration</h6>
+
+                                <!-- IPv4 -->
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Management IPv4 Address</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.mgmt_eth_ip_address_ipv4"
+                                               placeholder="e.g., 10.0.0.1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Subnet Mask</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.mgmt_eth_subnet_mask_ipv4"
+                                               placeholder="e.g., 255.255.255.0">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Default Gateway IPv4</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.default_gateway_ipv4"
+                                               placeholder="e.g., 10.0.0.254">
+                                    </div>
+                                </div>
+
+                                <!-- DNS -->
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Primary DNS</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.dns_server1"
+                                               placeholder="e.g., 8.8.8.8">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Secondary DNS</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.dns_server2"
+                                               placeholder="e.g., 8.8.4.4">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Tertiary DNS</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.dns_server3"
+                                               placeholder="Optional">
+                                    </div>
+                                </div>
+
+                                <!-- NTP -->
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Primary NTP</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.ntp1"
+                                               placeholder="ntp.checkpoint.com">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">NTP Version</label>
+                                        <select class="form-select" v-model="gaiaNetwork.ntp1_version">
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Secondary NTP</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.ntp2"
+                                               placeholder="ntp2.checkpoint.com">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">NTP Version</label>
+                                        <select class="form-select" v-model="gaiaNetwork.ntp2_version">
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Timezone + Admin Password -->
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Timezone</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.timezone"
+                                               placeholder="e.g., UTC">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Admin Password</label>
+                                        <div class="input-group">
+                                            <input :type="gaiaNetwork.show_admin_password ? 'text' : 'password'"
+                                                   class="form-control" v-model="gaiaNetwork.admin_password"
+                                                   placeholder="New admin password"
+                                                   autocomplete="off">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                    @click="gaiaNetwork.show_admin_password = !gaiaNetwork.show_admin_password">
+                                                <i :class="gaiaNetwork.show_admin_password ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Leave blank to keep current</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <!-- empty spacer for alignment -->
+                                    </div>
+                                </div>
+
+                                <!-- Proxy -->
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Proxy Server</label>
+                                        <input type="text" class="form-control" v-model="gaiaNetwork.proxy_server"
+                                               placeholder="Optional">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Proxy Port</label>
+                                        <input type="number" class="form-control" v-model.number="gaiaNetwork.proxy_port"
+                                               placeholder="8080">
+                                    </div>
+                                </div>
+
+                                <!-- Consent Flags -->
+                                <div class="row g-3 mt-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="gaiaUploadInfo" v-model="gaiaNetwork.upload_info">
+                                            <label class="form-check-label" for="gaiaUploadInfo">
+                                                Upload info to Check Point
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="gaiaDownloadInfo" v-model="gaiaNetwork.download_info">
+                                            <label class="form-check-label" for="gaiaDownloadInfo">
+                                                Download info from Check Point
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- IPv6 Toggle -->
+                                <div class="mt-4 border-top pt-3">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="gaiaIpv6Toggle" v-model="gaiaNetwork.config_ipv6">
+                                        <label class="form-check-label fw-semibold" for="gaiaIpv6Toggle">
+                                            <i class="bi bi-globe me-1"></i>Enable IPv6 Configuration
+                                        </label>
+                                    </div>
+                                    <div class="row g-3" v-if="gaiaNetwork.config_ipv6">
+                                        <div class="col-md-4">
+                                            <label class="form-label">IPv6 Address</label>
+                                            <input type="text" class="form-control" v-model="gaiaNetwork.mgmt_eth_ip_address_ipv6"
+                                                   placeholder="e.g., 2001:db8::1">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Mask Length</label>
+                                            <input type="text" class="form-control" v-model="gaiaNetwork.mgmt_eth_mask_length_ipv6"
+                                                   placeholder="e.g., 64">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Default Gateway IPv6</label>
+                                            <input type="text" class="form-control" v-model="gaiaNetwork.default_gateway_ipv6"
+                                                   placeholder="e.g., 2001:db8::fffe">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ── TAB 2: User Script ── -->
+                            <div class="tab-pane fade p-3" id="pane-script" role="tabpanel" aria-labelledby="tab-script">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0"><i class="bi bi-terminal me-2"></i>User Script</h6>
+                                    <button class="btn btn-sm btn-outline-secondary" @click="copyScript" v-if="userScript">
+                                        <i class="bi bi-clipboard me-1"></i> Copy
+                                    </button>
+                                </div>
+                                <textarea class="form-control font-monospace" rows="10"
+                                          v-model="userScript"
+                                          placeholder="User script loaded from template after claiming."></textarea>
+                                <small class="form-text text-muted">
+                                    This is the template's user script (with file inclusions resolved). You may edit it.
+                                </small>
+
+                                <!-- Detected Placeholders -->
+                                <div class="mt-3" v-if="detectedPlaceholders.length > 0">
+                                    <label class="form-label fw-semibold small mb-1">Detected Placeholders</label>
+                                    <div>
+                                        <span v-for="p in detectedPlaceholders" :key="p.tag"
+                                              class="badge me-1 mb-1"
+                                              :class="p.resolved ? 'bg-success' : 'bg-warning text-dark'">
+                                            {{ p.tag }} &rarr; {{ p.resolved ? (p.value || '✓') : 'pending' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Script Preview -->
+                                <div class="mt-3" v-if="processedUserScript && processedUserScript !== userScript">
+                                    <label class="form-label fw-semibold small mb-1">
+                                        <i class="bi bi-eye me-1"></i>Script Preview (with replacements)
+                                    </label>
+                                    <textarea class="form-control font-monospace bg-light" rows="10"
+                                              :value="processedUserScript"
+                                              readonly></textarea>
+                                </div>
+                            </div>
+
+                            <!-- ── TAB 3: Deployment Log ── -->
+                            <div class="tab-pane fade p-0" id="pane-log" role="tabpanel" aria-labelledby="tab-log">
+                                <div v-if="deploymentLog.length === 0" class="text-center text-muted py-5">
+                                    <i class="bi bi-journal-text fs-1 d-block mb-2"></i>
+                                    <p>No deployment log yet. Click <strong>Deploy Gateway</strong> to start.</p>
+                                </div>
+                                <div v-else>
+                                    <div class="d-flex justify-content-end align-items-center px-3 py-2 border-bottom bg-light">
+                                        <small class="text-muted" v-if="deploymentStatus.elapsed">
+                                            <i class="bi bi-clock me-1"></i>{{ deploymentStatus.elapsed }}
+                                        </small>
+                                    </div>
+                                    <div class="deployment-log" ref="deploymentLog">
+                                        <div v-for="(entry, i) in deploymentLog" :key="i"
+                                             class="log-entry" :class="'log-' + entry.status">
+                                            <span class="log-step" v-if="entry.step !== null">[Step {{ entry.step }}]</span>
+                                            <span class="log-msg">{{ entry.message }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- ===== DEPLOY BUTTON ===== -->
+                    <div class="card deploy-card">
+                        <div class="card-body text-center py-4">
+                            <button class="btn btn-lg px-5"
+                                    :class="canDeploy ? 'btn-primary' : 'btn-secondary'"
+                                    @click="deploy"
+                                    :disabled="!canDeploy || deploying">
+                                <span v-if="deploying" class="spinner-border spinner-border-sm me-2"></span>
+                                <i v-else class="bi bi-rocket-takeoff me-2"></i>
+                                Deploy Gateway
+                            </button>
+                            <div v-if="!canDeploy && sidebarReady" class="mt-2">
+                                <small class="text-muted">Fill in all required (*) fields to enable deployment</small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+
+        <!-- ===== DEPLOYMENT STATUS BANNER ===== -->
+        <div v-if="deploymentStatus.show" class="deployment-status-banner" :class="'status-' + deploymentStatus.type">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="status-icon me-3">
+                            <div v-if="deploymentStatus.type === 'progress'" class="spinner-border spinner-border-sm text-light" role="status"></div>
+                            <i v-else-if="deploymentStatus.type === 'success'" class="bi bi-check-circle-fill text-light fs-4"></i>
+                            <i v-else-if="deploymentStatus.type === 'error'" class="bi bi-x-circle-fill text-light fs-4"></i>
+                            <i v-else class="bi bi-info-circle-fill text-light fs-4"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ deploymentStatus.title }}</div>
+                            <div class="status-message" v-if="deploymentStatus.message">{{ deploymentStatus.message }}</div>
+                        </div>
+                    </div>
+                    <button v-if="deploymentStatus.type !== 'progress'" type="button" class="btn-close btn-close-white" @click="deploymentStatus.show = false"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3.3.4/dist/vue.global.js"></script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- App JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+
