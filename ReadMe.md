@@ -59,7 +59,7 @@ A hands-on lab guide for deploying Check Point gateways using the **Check Point 
     - 10.5 [Exporting Results to CSV](#105-exporting-results-to-csv)
     - 10.6 [Remote Backend](#106-remote-backend)
     - 10.7 [Creating Sample CSV Templates](#107-creating-sample-csv-templates)
-11. [Exercises](#11-exercises)
+11. [General Flow](#11-General-Flow)
     - Deploy a Spark Gateway to Smart-1 Cloud
     - Deploy a Gaia Gateway to SMS
     - Batch Deploy Multiple Gateways to LSM
@@ -1006,7 +1006,7 @@ python deploy-batch.py --create-all-samples
 
 ---
 
-## 11. Exercises
+## 11. General Flow
 
 ### Deploy a Spark Gateway to Smart-1 Cloud
 
