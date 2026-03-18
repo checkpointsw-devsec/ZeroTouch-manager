@@ -8,7 +8,7 @@ It allows to define templates and to attach them to gateways in your User center
    **Admin guide**:  
    https://sc1.checkpoint.com/documents/Appliances/Zero_Touch_Admin_Guide/EN/Content/Topics-AG/Getting-Started.htm  
 
-# Deploymant Tool:  
+# Deployment Tool:  
 The solution is achieving the functionality described below.
 
 It supports four management platform flows:
