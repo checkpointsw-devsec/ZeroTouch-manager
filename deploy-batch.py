@@ -8,10 +8,10 @@ Supports Smart-1 Cloud, LSM, SMS, and SMP deployment flows.
 Each deployment type uses a separate CSV file with only the required fields.
 
 Usage:
-    python deploy-batch.py --api-url http://localhost:8000 --deployment-type s1c --csv sample_smart1_cloud.csv  --filter gw-1590w-01
-    python deploy-batch.py --api-url http://localhost:8000 --deployment-type sms          --csv sample_sms.csv           --filter gw-1590w-01
-    python deploy-batch.py --api-url http://localhost:8000 --deployment-type smp          --csv sample_smp.csv           --filter gw-1590w-01
-    python deploy-batch.py --api-url http://localhost:8000 --deployment-type lsm          --csv sample_lsm.csv           --filter gw-1590w-01
+    python deploy-batch.py --api-url http://localhost:8000 --deployment-type s1c --csv sample_s1c.csv [--filter gw-1590w-01] [--set-mac 00:1C:7F:00:00:99]  
+    python deploy-batch.py --api-url http://localhost:8000 --deployment-type sms --csv sample_sms.csv [--filter gw-1590w-01] [--set-mac 00:1C:7F:00:00:99]  
+    python deploy-batch.py --api-url http://localhost:8000 --deployment-type smp --csv sample_smp.csv [--filter gw-1590w-01] [--set-mac 00:1C:7F:00:00:99]  
+    python deploy-batch.py --api-url http://localhost:8000 --deployment-type lsm --csv sample_lsm.csv [--filter gw-1590w-01] [--set-mac 00:1C:7F:00:00:99]  
     
 CSV Formats:
     Smart-1 Cloud (Gaia gateways):
