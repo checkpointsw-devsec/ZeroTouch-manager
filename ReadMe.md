@@ -127,6 +127,8 @@ Before starting, ensure you have the following:
 | **Zero Touch templates** | Pre-configured for each gateway hardware model (Spark and/or Gaia) |
 
 for each of the Management Types of your need:
+| Management | Details |
+|---|---|
 | **Smart-1 Cloud tenant** *(for S1C flow and/or SMP)* | Tenant URL + API Key or Secret Key |
 | **SMS / MDS** *(for SMS/LSM flows)* | On-premises management server reachable from the deployer host, with an API key configured |
 | **Gateway hardware** | Physical gateway appliances with known MAC addresses |
