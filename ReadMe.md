@@ -1,16 +1,15 @@
-The **Check Point Gateway Deployer** automates the provisioning and deployment of Check Point gateways through the **Zero Touch Portal**. 
+This **Deployment Tool** automates the provisioning and deployment of Check Point gateways through the **Zero Touch Portal**. 
 
-**Note: this code is not part of check point Software Technologies offer and therefor without any Support.**  
-this shared solution gives you a framework to deploy Check Point Gateway appliances.  
+**Note: this code is not part of Check Point Software Technologies offering and intended for Lab Usage and personal studies.**  
+This shared repository gives you a framework to deploy Check Point Gateway appliances and has been developed for our own lab usage.
 
-Zero touch SaaS Application is the core element to configure your gateways initially.  
-it allows to define Templates and to attach them to gateways in your User center.  
-   Admin guide: https://sc1.checkpoint.com/documents/Appliances/Zero_Touch_Admin_Guide/EN/Content/Topics-AG/Getting-Started.htm  
+Check Point Software Zero touch SaaS Application is the core element for gateways deployment.  
+It allows to define templates and to attach them to gateways in your User center.  
+   **Admin guide**:  
+   https://sc1.checkpoint.com/documents/Appliances/Zero_Touch_Admin_Guide/EN/Content/Topics-AG/Getting-Started.htm  
 
-
-# Check Point Gateway Deployment "Middelware":  
-**It is a fully working solution and can be forked and enhanced to your need.**
-
+# Deploymant Tool:  
+The solution is achieving the functionality described below.
 
 It supports four management platform flows:
 | Flow | Management Platform | Gateway Types | Key Actions |
