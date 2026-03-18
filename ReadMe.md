@@ -50,8 +50,7 @@ Browser (Vue.js)  ──  or  ──  deploy-batch.py (CLI)
 
 ## Table of Contents
 
-1. [Lab Overview](#1-lab-overview)
-2. [Lab Prerequisites](#2-lab-prerequisites)
+2. [Prerequisites](#2-prerequisites)
 3. [Installation and Setup](#3-installation-and-setup)
    - 3.1 [Clone and Install](#31-clone-and-install)
 4. [Configuring the .env File](#4-configuring-the-env-file)
@@ -61,7 +60,7 @@ Browser (Vue.js)  ──  or  ──  deploy-batch.py (CLI)
 6. [Nginx Reverse Proxy and HTTPS](#6-nginx-reverse-proxy-and-https)
    - 6.1 [Why Use Nginx](#61-why-use-nginx)
    - 6.2 [Systemd Service for the Backend](#62-systemd-service-for-the-backend)
-   - 6.3 [HTTP-Only Configuration (Lab)](#63-http-only-configuration-lab)
+   - 6.3 [HTTP-Only Configuration](#63-http-only-configuration)
    - 6.4 [HTTPS with Self-Signed Certificate](#64-https-with-self-signed-certificate)
    - 6.5 [HTTPS with Let's Encrypt](#65-https-with-lets-encrypt)
    - 6.6 [Nginx on Windows](#66-nginx-on-windows)
@@ -116,13 +115,9 @@ Appendix
 - A.2 [Config File Injection Examples](#A.2-config-file-injection-examples)
 ---
 
-## 1. Lab Overview
-
-
-
 ---
 
-## 2. Lab Prerequisites
+## 2. Prerequisites
 
 Before starting, ensure you have the following:
 
@@ -302,9 +297,9 @@ HOST=127.0.0.1
 PORT=8000
 ```
 
-### 6.3 HTTP-Only Configuration (Lab)
+### 6.3 HTTP-Only Configuration 
 
-For internal lab networks where HTTPS is not required:
+For internal networks where HTTPS is not required:
 
 **Install Nginx:**
 
@@ -456,7 +451,7 @@ sudo certbot renew --dry-run
 
 ### 6.6 Nginx on Windows
 
-For development or lab use on Windows:
+For development use on Windows:
 
 1. Download Nginx from [nginx.org](https://nginx.org/en/download.html) (Stable version)
 2. Extract to `C:\nginx\`
@@ -490,7 +485,7 @@ ALLOWED_ORIGINS=["https://192.168.1.100"]
 # For HTTPS with domain:
 ALLOWED_ORIGINS=["https://deployer.example.com"]
 
-# For HTTP lab:
+# For HTTP only:
 ALLOWED_ORIGINS=["http://192.168.1.100"]
 ```
 
@@ -1300,22 +1295,6 @@ SIC one-time passwords (`sic_otp`) are used once during gateway initialization. 
 - Zero Touch API credentials grant access to claim and configure gateways
 - Management server API keys grant full read/write access
 - Rotate these credentials periodically
-
----
-
-## Additional Suggestions for Lab Expansion
-
-Here are additional topics you may want to include as the lab evolves:
-
-- **Multi-Domain Server (MDS) Lab** — walkthrough of deploying gateways across multiple domains, including domain selection in the CSV and web UI
-- **Gateway Replacement Procedure** — step-by-step for replacing a failed gateway (unclaim old MAC, deploy with `--set-mac`)
-- **Template Design Best Practices** — how to structure Zero Touch templates for reusability across hardware models
-- **Monitoring Deployment with the API Docs** — using the Swagger UI at `/docs` to test individual endpoints
-- **Integration with CI/CD** — using `deploy-batch.py` in automated pipelines (Jenkins, GitHub Actions)
-- **Log Analysis** — reading and interpreting `app.log` entries for deployment forensics
-- **Scaling the Deployment** — running multiple batch deployments in parallel, tuning `SIC_TIMEOUT`
-- **Backup and Recovery** — exporting deployment results, maintaining a gateway inventory
-- **Custom User-Script Development** — authoring advanced clish scripts with file injection for specific use cases
 
 ---
 # Appendix
