@@ -1,20 +1,51 @@
-**Note: this code is not part of check point Software Technologies offer and therefor without any Support.**
-this shared solution gives you a framework to deploy Check Point Gateway appliances.
+The **Check Point Gateway Deployer** automates the provisioning and deployment of Check Point gateways through the **Zero Touch Portal**. 
 
- 
-Zero touch SaaS Application is the core element to configure your gateways initially.
-it allows to define Templates and to attach them to gateways in your User center.
-   Admin guide: https://sc1.checkpoint.com/documents/Appliances/Zero_Touch_Admin_Guide/EN/Content/Topics-AG/Getting-Started.htm
+**Note: this code is not part of check point Software Technologies offer and therefor without any Support.**  
+this shared solution gives you a framework to deploy Check Point Gateway appliances.  
 
-
-
-# Check Point Gateway Deployment "Middelware"
+Zero touch SaaS Application is the core element to configure your gateways initially.  
+it allows to define Templates and to attach them to gateways in your User center.  
+   Admin guide: https://sc1.checkpoint.com/documents/Appliances/Zero_Touch_Admin_Guide/EN/Content/Topics-AG/Getting-Started.htm  
 
 
+# Check Point Gateway Deployment "Middelware":  
+**It is a fully working solution and can be forked and enhanced to your need.**
 
 
-It is a fully working solution and can be forked and enhanced to your need.
+It supports four management platform flows:
+| Flow | Management Platform | Gateway Types | Key Actions |
+|---|---|---|---|
+| **Smart-1 Cloud** | Check Point Smart-1 Cloud (MaaS) | Spark + Gaia | Creates gateway in cloud, injects MaaS token, configures blades + VPN |
+| **SMS** | On-premises SMS or MDS | Spark + Gaia | Creates gateway object, establishes SIC, configures blades + policy |
+| **LSM** | On-premises LSM (Large Scale Management) | Gaia | Adds LSM gateway with security/provisioning profiles |
+| **SMP** | Spark Management Portal | Spark only | Zero Touch claim + release — no management server interaction |
 
+**Architecture:**
+
+```
+Browser (Vue.js)  ──  or  ──  deploy-batch.py (CLI)
+         │                        │
+         │                        │  
+         ▼     HTTP / SSE         ▼
+         └────────────────────────┘
+                   │
+                   ▼
+          FastAPI Backend (Python)
+                   │
+              ┌────┼────┬────────┐
+              ▼    ▼    ▼        ▼
+            S1C  SMS  LSM      SMP
+            Orch Orch Orch     Orch
+              │    │    │        │
+              ▼    ▼    ▼        │
+           Smart-1  SMS/MDS      │
+           Cloud                 │
+              │    │    │        ▼
+              └────┴────┴────────┘
+                   │
+                   ▼
+             Zero Touch Portal
+```
 ---
 
 ## Table of Contents
@@ -87,41 +118,7 @@ Appendix
 
 ## 1. Lab Overview
 
-The **Check Point Gateway Deployer** automates the provisioning and deployment of Check Point gateways through the **Zero Touch Portal**. It supports four management platform flows:
 
-| Flow | Management Platform | Gateway Types | Key Actions |
-|---|---|---|---|
-| **Smart-1 Cloud** | Check Point Smart-1 Cloud (MaaS) | Spark + Gaia | Creates gateway in cloud, injects MaaS token, configures blades + VPN |
-| **SMS** | On-premises SMS or MDS | Spark + Gaia | Creates gateway object, establishes SIC, configures blades + policy |
-| **LSM** | On-premises LSM (Large Scale Management) | Gaia | Adds LSM gateway with security/provisioning profiles |
-| **SMP** | Spark Management Portal | Spark only | Zero Touch claim + release — no management server interaction |
-
-**Architecture:**
-
-```
-Browser (Vue.js)  ──  or  ──  deploy-batch.py (CLI)
-         │                        │
-         │                        │  
-         ▼     HTTP / SSE         ▼
-         └────────────────────────┘
-                   │
-                   ▼
-          FastAPI Backend (Python)
-                   │
-              ┌────┼────┬────────┐
-              ▼    ▼    ▼        ▼
-            S1C  SMS  LSM      SMP
-            Orch Orch Orch     Orch
-              │    │    │        │
-              ▼    ▼    ▼        │
-           Smart-1  SMS/MDS      │
-           Cloud                 │
-              │    │    │        ▼
-              └────┴────┴────────┘
-                   │
-                   ▼
-             Zero Touch Portal
-```
 
 ---
 
