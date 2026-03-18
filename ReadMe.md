@@ -14,7 +14,7 @@ The solution is achieving the functionality described below.
 It supports four management platform flows:
 | Flow | Management Platform | Gateway Types | Key Actions |
 |---|---|---|---|
-| **Smart-1 Cloud** | Check Point Smart-1 Cloud (MaaS) | Spark + Gaia | Creates gateway in cloud, injects MaaS token, configures blades + VPN |
+| **Smart-1 Cloud** | Check Point Smart-1 Cloud | Spark + Gaia | Creates gateway in cloud, injects MaaS token, configures blades + VPN |
 | **SMS** | On-premises SMS or MDS | Spark + Gaia | Creates gateway object, establishes SIC, configures blades + policy |
 | **LSM** | On-premises LSM (Large Scale Management) | Spark + Gaia | Adds LSM gateway with security/provisioning profiles |
 | **SMP** | Spark Management Portal | Spark | Zero Touch claim + release — no management server interaction |
