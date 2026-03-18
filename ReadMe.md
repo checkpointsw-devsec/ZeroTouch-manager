@@ -144,16 +144,22 @@ for each of the Management Types of your need:
 git clone <repo-url>
 cd <destination folder>
 cd backend
+```
 
 # in case you want to run it in a Python virtual environment:
-   python -m venv venv 
-   # Activate the virtual environment
-   # Windows:
-   venv\Scripts\activate
-   # Linux / macOS:
-   source venv/bin/activate
+```bash
+python -m venv venv 
+
+# Activate the virtual environment
+# Windows:
+venv\Scripts\activate
+
+# Linux / macOS:
+source venv/bin/activate
+```
 
 # Install Python dependencies
+```bash
 pip install -r requirements.txt
 ```
 
@@ -186,15 +192,17 @@ Then edit `backend/.env` with your values. Below are flow-specific minimal confi
 | `MGMT_BASE_URL` | SMS/LSM | | Full URL to management server Web API |
 | `MGMT_SERVER_PORT` | | `443` | Management API port |
 | `MGMT_SERVER_API_KEY` | SMS/LSM | | API key with R/W permissions on the management server |
-| `ALLOWED_ORIGINS` | | `["http://localhost:8000"]` | CORS origins — update for production/Nginx |
-| `LOG_LEVEL` | | `INFO` | `DEBUG`, `INFO`, `WARNING` |
-| `API_DEBUG` | | `none` | HTTP body logging: `none`, `req`, `resp`, `all` |
-| `DEBUG` | | `false` | Enable console (stderr) logging |
+| `SPARK_CLIENT_ID` |**Yes**| | OAuth client ID from Spark management |
+| `SPARK_SECRET_KEY` | **Yes** | | OAuth secret key Spark management |
 | `SIC_TIMEOUT` | | `900` | Seconds to wait for SIC trust establishment |
 | `SSL_VERIFY` | | `false` | TLS certificate verification for management server |
 | `SESSION_TIMEOUT` | | `3600` | Session timeout in seconds |
 | `SECRET_KEY` | | (default) | Application secret — change in production |
 | `SESSION_SECRET` | | (default) | Session signing secret — change in production |
+| `ALLOWED_ORIGINS` | | `["http://localhost:8000"]` | CORS origins — update for production/Nginx |
+| `LOG_LEVEL` | | `INFO` | `DEBUG`, `INFO`, `WARNING` |
+| `API_DEBUG` | | `none` | HTTP body logging: `none`, `req`, `resp`, `all` |
+| `DEBUG` | | `false` | Enable console (stderr) logging |
 | `SHOW_SECRETS_IN_LOGFILE` | | `false` | Log passwords/OTPs in plain text (debugging only) |
 
 ### 4.2 Common .env Mistakes
