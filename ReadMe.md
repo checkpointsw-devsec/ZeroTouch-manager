@@ -577,7 +577,7 @@ CSV files drive both the batch CLI tool (`deploy-batch.py`) and serve as a refer
 
 ### 8.1 Smart-1 Cloud CSV
 
-**Sample file:** `sample_smart1_cloud.csv`
+**Sample file:** `sample_s1c.csv`
 
 | Column | Required | Description |
 |---|---|---|
@@ -927,7 +927,7 @@ The `deploy-batch.py` script deploys multiple gateways from a CSV file in a sing
 
 ```bash
 # Deploy all gateways from a Smart-1 Cloud CSV
-python deploy-batch.py -t s1c --csv sample_smart1_cloud.csv
+python deploy-batch.py -t s1c --csv sample_s1c.csv
 
 # Deploy all gateways from an SMS CSV
 python deploy-batch.py -t sms --csv sample_sms.csv
@@ -1312,7 +1312,7 @@ SIC one-time passwords (`sic_otp`) are used once during gateway initialization. 
 /
 ├── deploy-batch.py              # CLI batch deployment tool
 ├── requirements.txt             # Python dependencies
-├── sample_smart1_cloud.csv      # Sample CSV — Smart-1 Cloud
+├── sample_s1c.csv      # Sample CSV — Smart-1 Cloud
 ├── sample_sms.csv               # Sample CSV — SMS
 ├── sample_lsm.csv               # Sample CSV — LSM
 ├── sample_smp.csv               # Sample CSV — SMP
