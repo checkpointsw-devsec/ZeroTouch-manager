@@ -142,8 +142,8 @@ for each of the Management Types of your need:
 
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd <destination folder>
+git clone https://github.com/checkpointsw-devsec/ZeroTouch-manager
+cd 
 cd backend
 ```
 
