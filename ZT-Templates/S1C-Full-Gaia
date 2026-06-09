@@ -1,0 +1,37 @@
+##!! file1.conf
+##!! file2.conf
+# ###########################
+# set fake IP for Mgmt Interface
+# ###########################
+# set interface Mgmt ipv4-address 99.99.99.99 mask-length 24
+# set static-route default nexthop gateway address 192.168.1.254 off
+
+# ####################################################
+# set IP for eth1 as new Interface to be used as management interface
+# ####################################################
+# set interface eth1 ipv4-address 192.168.10.81 mask-length 24
+# set management interface eth1
+# delete interface Mgmt ipv4-address
+
+# ################################
+# set IP for eth4 and eth5 with vlanInterface
+# ################################
+set interface eth4 state on
+set interface eth4 ipv4-address 192.168.4.1 mask-length 24
+
+set interface eth5 state on
+add interface eth5 vlan 200 
+set interface eth5.200 ipv4-address 192.168.5.1 mask-length 24
+set interface eth5.200 state on
+
+# ###########################
+# set expert and grub password
+# ###########################
+set grub2-password-hash grub.pbkdf2.sha512.10000.E49FEED9E2ED9D07F7F5F0E64ED8527585F91F9495AE9FEB7E5B9584D677DFF4DE741E7F4D1AEEA84B67E99C199ABA5488616A8E4146A1F44F127FEF6A4B6D65.FAEEDEF02D543369746E879241F4453420FA137C6D11FFE63F638F938FAB6801C679D76E26C047CD0AD86E34AB654979D9D7B78418513692A66A44731322BB64
+
+set expert-password-hash $6$UAxWXDhef2zm8mqt$gvnwQIF1dkw8J9JUvmyYXUeAt2LSl4V62JKNFilEK0YQGo4ACOTry4QLWjE9nMQOPCKs42ZleldciXgCdnjCd1
+
+# ###########################
+# set maas auth Token
+# ###########################
+set security-gateway cloud-mgmt-service on auth-token <token>
