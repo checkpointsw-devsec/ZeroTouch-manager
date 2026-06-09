@@ -1,0 +1,363 @@
+/* ───────────────────────── Check Point Gateway Deployer ───────────────────────── */
+
+:root {
+    --cp-primary: #0066cc;
+    --cp-success: #28a745;
+    --cp-danger: #dc3545;
+    --cp-warning: #ffc107;
+    --cp-info: #17a2b8;
+    --sidebar-width: 280px;
+    --sidebar-bg: #f0f2f5;
+    --sidebar-border: #dde0e4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background-color: #f8f9fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ───────────────────────── Navbar ───────────────────────── */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1040;
+    position: relative;
+}
+
+/* ───────────────────────── App Layout ───────────────────────── */
+.app-layout {
+    display: flex;
+    min-height: calc(100vh - 56px); /* navbar height */
+}
+
+/* ───────────────────────── Sidebar ───────────────────────── */
+.sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #495057;
+    border-bottom: 1px solid var(--sidebar-border);
+    background: #e9ecef;
+}
+
+.sidebar-section {
+    padding: 10px 16px 4px;
+}
+
+.sidebar-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.sidebar-hint {
+    display: block;
+    font-size: 0.72rem;
+    margin-top: 2px;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 12px 16px;
+    border-top: 1px solid var(--sidebar-border);
+}
+
+.sidebar .form-select-sm,
+.sidebar .form-control-sm {
+    font-size: 0.82rem;
+}
+
+/* ───────────────────────── Main Content ───────────────────────── */
+.main-content {
+    flex: 1;
+    padding: 24px 32px 80px;
+    overflow-y: auto;
+    max-width: 960px;
+}
+
+/* ───────────────────────── Empty State ───────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.checklist {
+    display: inline-block;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.checklist > div {
+    padding: 4px 0;
+    font-size: 0.9rem;
+}
+
+.checklist > div i {
+    margin-right: 8px;
+    width: 18px;
+    text-align: center;
+}
+
+/* ───────────────────────── Cards ───────────────────────── */
+.card {
+    border: none;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.deploy-card {
+    border: 2px dashed #dee2e6;
+    background: #fff;
+}
+
+.deploy-card .btn-primary {
+    min-width: 200px;
+}
+
+/* ───────────────────────── Form Improvements ───────────────────────── */
+.form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #495057;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--cp-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.15);
+}
+
+.form-check {
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.form-check-label i {
+    margin-right: 4px;
+}
+
+/* ───────────────────────── List Group ───────────────────────── */
+.list-group-item {
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(3px);
+    cursor: pointer;
+}
+
+.list-group-item.active {
+    background-color: var(--cp-primary);
+    border-color: var(--cp-primary);
+}
+
+/* ───────────────────────── Buttons ───────────────────────── */
+.btn {
+    transition: all 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* ───────────────────────── Alert ───────────────────────── */
+.alert {
+    border-radius: 6px;
+    border-left: 4px solid;
+}
+
+.alert-success { border-left-color: var(--cp-success); }
+.alert-danger  { border-left-color: var(--cp-danger); }
+.alert-warning { border-left-color: var(--cp-warning); }
+.alert-info    { border-left-color: var(--cp-info); }
+
+/* ───────────────────────── Badge ───────────────────────── */
+.badge {
+    padding: 0.4em 0.65em;
+    font-weight: 500;
+    font-size: 0.78rem;
+}
+
+/* ───────────────────────── Deployment Log ───────────────────────── */
+.deployment-log {
+    max-height: 320px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.82rem;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 12px;
+    border-radius: 0 0 8px 8px;
+}
+
+.log-entry {
+    padding: 2px 0;
+    line-height: 1.5;
+}
+
+.log-step {
+    color: #89b4fa;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.log-entry.log-completed .log-msg {
+    color: #a6e3a1;
+}
+
+.log-entry.log-error .log-msg {
+    color: #f38ba8;
+    font-weight: 600;
+}
+
+.log-entry.log-warning .log-msg {
+    color: #f9e2af;
+}
+
+.log-entry.log-in_progress .log-msg {
+    color: #cdd6f4;
+}
+
+/* ───────────────────────── Deployment Status Banner ───────────────────────── */
+.deployment-status-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 14px 24px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    z-index: 1050;
+    animation: slideUp 0.3s ease-out;
+}
+
+.deployment-status-banner.status-progress {
+    background: linear-gradient(135deg, #0d6efd, #0066cc);
+    color: white;
+}
+
+.deployment-status-banner.status-success {
+    background: linear-gradient(135deg, #198754, #28a745);
+    color: white;
+}
+
+.deployment-status-banner.status-error {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.deployment-status-banner .status-message {
+    opacity: 0.92;
+    font-size: 0.88rem;
+}
+
+.deployment-status-banner .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.deployment-status-banner .btn-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.deployment-status-banner.status-progress .status-message {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.6; }
+}
+
+/* ───────────────────────── Animation ───────────────────────── */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+/* ───────────────────────── Scrollbar ───────────────────────── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* ───────────────────────── Spinner ───────────────────────── */
+.spinner-border {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: 0.15em;
+}
+
+/* ───────────────────────── Responsive ───────────────────────── */
+@media (max-width: 992px) {
+    .app-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        min-width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--sidebar-border);
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .sidebar-brand {
+        width: 100%;
+    }
+    .sidebar-section {
+        flex: 1 0 140px;
+        min-width: 140px;
+    }
+    .sidebar-footer {
+        margin-top: 0;
+        width: 100%;
+    }
+    .main-content {
+        padding: 16px;
+        max-width: 100%;
+    }
+}

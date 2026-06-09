@@ -1,0 +1,3 @@
+mac_address,account_id,template_id,template_name,gateway_name,hw_type
+00:1C:7F:9B:AE:8D,9075116,380053285,Master_SMP-Spark,gw-1590w-01,Spark
+00:1C:7F:B1:3F:29,9075116,380053285,Master_SMP-Spark,gw-1590-01,Spark

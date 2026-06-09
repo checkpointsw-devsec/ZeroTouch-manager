@@ -1,0 +1,33 @@
+##!! wan-interface.conf
+##!! NAT.conf
+# #####################################
+# Settings LAN1_Switch
+# #####################################
+set dhcp server interface LAN1_Switch disable
+set interface LAN1_Switch ipv4-address "192.168.40.1" subnet-mask "255.255.255.0"
+set interface LAN1_Switch description "back Office Network"
+set interface LAN1_Switch exclude-from-dns-proxy "off"
+set interface LAN1_Switch state "on"
+set interface LAN1_Switch hotspot "off"
+set switch LAN1_Switch remove port LAN3
+set switch LAN1_Switch remove port LAN4
+set switch LAN1_Switch remove port LAN5
+set switch LAN1_Switch remove port LAN6
+set switch LAN1_Switch remove port LAN7
+set switch LAN1_Switch remove port LAN8
+
+# #####################################
+# set expert mode password and sic key
+# #####################################
+set expert password-hash $1$Vpn123Vp$A0pBagFtYK2cC6/Plr94H0
+
+fetch license usercenter
+
+set sic_init password <sic-key>
+sleep 10
+
+connect security-management mgmt-addr <mgmt-server-ip> use-one-time-password true local-override-mgmt-addr true send-logs-to by-policy 
+sleep 30
+
+fetch policy mgmt-ipv4-address <mgmt-server-ip>
+sleep 10
