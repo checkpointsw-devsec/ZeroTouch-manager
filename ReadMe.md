@@ -143,7 +143,7 @@ for each of the Management Types of your need:
 ```bash
 # Clone the repository
 git clone https://github.com/checkpointsw-devsec/ZeroTouch-manager
-cd 
+cd ZeroTouch-manager
 cd backend
 ```
 
